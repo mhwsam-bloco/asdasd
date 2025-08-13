@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Unicode ⇄ Bijoy Converter</title>
+  <style>
+    :root {
+      --bg: #9da2ac;
+      --panel: #0f172a;
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --accent: #22d3ee;
+      --accent-2: #60a5fa;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; padding: 20px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Nirmala UI, Noto Sans Bengali, sans-serif;
+      background: radial-gradient(1200px 1200px at 100% -10%, rgba(34,211,238,.08), transparent 40%),
+                  radial-gradient(900px 900px at -20% 110%, rgba(96,165,250,.08), transparent 40%), var(--bg);
+      color: var(--text);
+    }
+    header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    header h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+    .tag { padding: 3px 9px; border-radius: 999px; background: #0ea5e9; color:#001018; font-weight:700; font-size: 12px; }
+
+    .grid {
+      display: grid; gap: 14px; align-items: stretch;
+      grid-template-columns: 1fr minmax(120px, 150px) 1fr;
+    }
+    .panel { background: linear-gradient(180deg, #0f172a 0%, #0b1327 100%);
+      border: 1px solid #0b2448; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    .head { display:flex; justify-content: space-between; align-items:center; padding:12px; border-bottom:1px solid #0b2448; }
+    .head .title { display:flex; gap:10px; align-items:center; font-weight:700; letter-spacing:.3px; }
+    .head small { color: var(--muted); font-weight:500; }
+
+    textarea {
+      width: 100%; min-height: 380px; padding: 14px 16px; border: 0; outline: 0; resize: vertical;
+      background: transparent; color: var(--text); font-size: 16px; line-height: 1.55;
+      border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    .hint { color: var(--muted); font-size: 12px; }
+    .controls { display:flex; flex-direction:column; gap:8px; align-items:stretch; justify-content:center; }
+
+    button, .button {
+      cursor: pointer; border: 1px solid #12325f; color: #cde4ff;
+      background: linear-gradient(180deg, rgba(34,211,238,.14), rgba(96,165,250,.10));
+      padding: 10px 12px; border-radius: 12px; font-weight: 700; letter-spacing:.25px;
+      transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease;
+      text-align:center; user-select:none;
+    }
+    button:hover { border-color: #1f5db5; box-shadow: 0 0 0 3px rgba(56,189,248,.12) inset; }
+    button:active { transform: translateY(1px) scale(.995); }
+    .btn-accent { background: linear-gradient(180deg, rgba(34,211,238,.28), rgba(96,165,250,.22)); color:#03161f; border-color:#1aa1cc; }
+    .btn-soft { background: #0e1a33; color:#cfe8ff; }
+
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .row .button { flex:1; }
+    .sub { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+    .sub button { flex:1; }
+
+    .footer { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top: 14px; color: var(--muted); font-size: 13px; flex-wrap:wrap; }
+
+    .toggle { display:flex; align-items:center; gap:8px; }
+    .toggle input[type="checkbox"] { width: 18px; height: 18px; }
+
+    .kbd { background:#061221; border:1px solid #0b2448; border-radius:9px; padding:4px 8px; font-family:ui-monospace,monospace; color:#b6d7ff; }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .controls { flex-direction: row; }
+    }
+  </style>
+  <!-- Optional SutonnyMJ font for Bijoy viewing -->
+
+<!-- Preload ONLY the same-origin file; skip CDN here -->
+ <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+<link rel="preload" as="font" href="./fonts/SutonnyOMJ.woff2" type="font/woff2" crossorigin>
+
+<style>
+  /* Regular */
+  @font-face{
+    font-family: 'SutonnyOMJ';
+    src:
+      local('SutonnyOMJ'),
+      local('SutonnyMJ'),
+      url('./fonts/SutonnyOMJ.woff2') format('woff2'),
+      url('./fonts/SutonnyOMJ.woff') format('woff'),
+      /* CDN fallback */
+      url('https://cdn.jsdelivr.net/gh/mhwsam-bloco/font/SutonnyOMJ.woff2') format('woff2'),
+      url('https://cdn.jsdelivr.net/gh/mhwsam-bloco/font/SutonnyOMJ.woff') format('woff'),
+      url('./fonts/SUTONNYMJ.TTF') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* Bold */
+  @font-face{
+    font-family: 'SutonnyOMJ';
+    src:
+      url('./fonts/SutonnyMJ-Bold.woff2') format('woff2'),
+      url('./fonts/SutonnyMJ-Bold.woff') format('woff'),
+      url('https://cdn.jsdelivr.net/gh/mhwsam-bloco/font/SutonnyMJ-Bold.woff2') format('woff2'),
+      url('https://cdn.jsdelivr.net/gh/mhwsam-bloco/font/SutonnyMJ-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* Italic (optional) */
+  @font-face{
+    font-family: 'SutonnyOMJ';
+    src:
+      url('./fonts/SutonnyMJ-Italic.woff2') format('woff2'),
+      url('./fonts/SutonnyMJ-Italic.woff') format('woff'),
+      url('https://cdn.jsdelivr.net/gh/mhwsam-bloco/font/SutonnyMJ-Italic.woff2') format('woff2'),
+      url('https://cdn.jsdelivr.net/gh/mhwsam-bloco/font/SutonnyMJ-Italic.woff') format('woff');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  /* Apply to the Bijoy pane when toggled */
+  .sutonny{
+    font-family: 'SutonnyOMJ', 'SutonnyMJ', monospace !important;
+    font-variant-ligatures: none;
+    letter-spacing: 0;
+      font-synthesis: none; /* prevent faux bold/italic */
+  }
+</style>
+
+
+</head>
+<body>
+  <header>
+    <div class="tag">Bangla</div>
+    <h1>Unicode ⇄ Bijoy Converter</h1>
+    <span class="hint">Fast, accurate, reversible. Works offline.</span>
+  </header>
+
+  <section class="grid">
+    <!-- LEFT: Unicode -->
+    <div class="panel">
+      <div class="head">
+        <div class="title">Unicode <small class="hint">(logical Bangla)</small></div>
+        <div class="row">
+          <label class="toggle"><input id="autoL" type="checkbox" checked> <span class="hint">Auto-convert</span></label>
+          <button id="copyL" title="Copy" class="btn-soft">Copy</button>
+        </div>
+      </div>
+      <textarea id="textAreaLeft" placeholder="এখানে ইউনিকোড বাংলা লিখুন… উদাহরণ: ‘বাংলা লেখা থেকে বিজয়’"></textarea>
+      <div class="sub">
+        <button id="clearL" class="btn-soft">Clear</button>
+        <button id="pasteL" class="btn-soft">Paste</button>
+        <button id="downloadL" class="btn-soft">Download .txt (UTF‑8)</button>
+        <label class="button btn-soft" style="position:relative;overflow:hidden;">
+          Load .txt
+          <input id="uploadL" type="file" accept=".txt,text/plain" style="opacity:0;position:absolute;inset:0;cursor:pointer;" />
+        </label>
+      </div>
+    </div>
+
+    <!-- MIDDLE: Controls -->
+    <div class="controls">
+      <button id="u2b" class="btn-accent">Unicode → Bijoy</button>
+      <button id="b2u" class="btn-accent">Bijoy → Unicode</button>
+      <button id="swap" class="btn-soft">Swap ↔</button>
+      <div class="row">
+        <label class="toggle"><input id="bijoyFont" type="checkbox"> <span class="hint">Show Bijoy with <span class="kbd">SutonnyMJ</span></span></label>
+      </div>
+      <div class="row">
+        <button id="sample1" class="btn-soft" title="Insert sample">Sample</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Bijoy (ANSI sequence) -->
+    <div class="panel">
+      <div class="head">
+        <div class="title">Bijoy <small class="hint">(ANSI key sequence)</small></div>
+        <div class="row">
+          <label class="toggle"><input id="autoR" type="checkbox"> <span class="hint">Auto-convert</span></label>
+          <button id="copyR" title="Copy" class="btn-soft">Copy</button>
+        </div>
+      </div>
+      <textarea id="textAreaRight" placeholder="Bijoy আউটপুট / ইনপুট এখানে…"></textarea>
+      <div class="sub">
+        <button id="clearR" class="btn-soft">Clear</button>
+        <button id="pasteR" class="btn-soft">Paste</button>
+        <button id="downloadR" class="btn-soft">Download .txt (ANSI-like)</button>
+        <label class="button btn-soft" style="position:relative;overflow:hidden;">
+          Load .txt
+          <input id="uploadR" type="file" accept=".txt,text/plain" style="opacity:0;position:absolute;inset:0;cursor:pointer;" />
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <div class="row"><span class="hint">Tips: Type on either side. Use <span class="kbd">Unicode → Bijoy</span> or <span class="kbd">Bijoy → Unicode</span>. Toggle SutonnyMJ to preview Bijoy visually.</span></div>
+    <div class="row"><button id="undo" class="btn-soft" title="Undo (per side)">Undo</button><button id="redo" class="btn-soft" title="Redo (per side)">Redo</button></div>
+  </div>
+
+  <script>
+    // ============== Utilities & State ==============
+    const $ = (id) => document.getElementById(id);
+    const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Simple per-textarea history
+    const history = {
+      textAreaLeft: { stack: [], idx: -1 },
+      textAreaRight: { stack: [], idx: -1 }
+    };
+    function addState(id) {
+      const el = $(id); if (!el) return;
+      const h = history[id];
+      // Trim forward
+      h.stack = h.stack.slice(0, h.idx + 1);
+      h.stack.push(el.value);
+      h.idx = h.stack.length - 1;
+      // Persist minimal state
+      localStorage.setItem('ub_left', $('textAreaLeft').value);
+      localStorage.setItem('ub_right', $('textAreaRight').value);
+    }
+    function applyState(id, dir) {
+      const h = history[id];
+      const next = h.idx + dir;
+      if (next < 0 || next >= h.stack.length) return;
+      h.idx = next; $(id).value = h.stack[h.idx];
+    }
+
+    // ============== Mapping Tables (from your snippet) ==============
+    // --- Unicode → Bijoy ---
+    const unicodeToBijoyMap = {
+      // স্বরবর্ণ সেকশন
+      "অ": "A",        "আ": "Av",       "ই": "B",        "ঈ": "C",        "উ": "D",        "ঊ": "E",        "ঋ": "F",        "এ": "G",        "ঐ": "H",        "ও": "I",
+      "ঔ": "J",
+
+      // ব্যাঞ্জনবর্ণ সেকশন
+      "ক": "K",        "খ": "L",        "গ": "M",        "ঘ": "N",        "ঙ": "O",        "চ": "P",        "ছ": "Q",        "জ": "R",        "ঝ": "S",        "ঞ": "T",
+      "ট": "U",        "ঠ": "V",        "ড": "W",        "ঢ": "X",        "ণ": "Y",        "ত": "Z",        "থ": "_",        "দ": "`",        "ধ": "a",        "ন": "b",
+      "প": "c",        "ফ": "d",        "ব": "e",        "ভ": "f",        "ম": "g",        "য": "h",        "র": "i",        "ল": "j",        "শ": "k",        "ষ": "l",
+      "স": "m",        "হ": "n",        "ড়": "o",        "ঢ়": "p",        "য়": "q",        "ৎ": "r",        "ং": "s",        "ঃ": "t",        "ঁ": "u",        "ৰ": "v", "ড়": "o",        "ঢ়": "p",        "য়": "q",
+       "র্বৃ": "e„©",       "ৱ": "w",     "ড়ে": "‡o",        "ঢ়ে": "‡p",        "য়ে": "‡q",   "ড়ৈ": "‰o",        "ঢ়ৈ": "‰p",        "য়ৈ": "‰q",    "ড়ি": "wo",        "ঢ়ি": "wp",        "য়ি": "wq",
+
+      // নম্বর সেকশন
+      "০": "0",        "১": "1",        "২": "2",        "৩": "3",        "৪": "4",        "৫": "5",        "৬": "6",        "৭": "7",        "৮": "8",        "৯": "9",
+      "৳": "৳",        "₹": "₹",
+
+      // কার চিহ্ন সেকশন
+      "া": "v",        "ি": "w",        "ী": "x",        "ু": "y",        "ূ": "~",        "ৃ": "„",
+
+      // ফলা সেকশন
+      "্র": "ª",        "্য": "¨",        "র্": "©",  "¦": " ্ব",
+
+      // ওকার ঔকার সেকশন
+      "ে": "‡",        "ৈ": "‰",        "ো": "‡v",       "ৌ": "‡Š",       "ৗ": "Š",
+
+      // জয়েনার সেকশন
+      "্": "&",
+
+      // বিবিধ
+      "।": "|",        "॥": "||",       "‘": "Ô",        "’": "Õ",        "“": "Ò",        "”": "Ó",        "৷": "৷",        "৥": "৥",
+
+      // য-সম্পর্কিত
+"য়": "q", "য়": "q",       // ইয় (ডট-যুক্ত)
+"্য": "¨",                 // য-ফলা (ja-phala)
+
+// Assamese rafala
+"্ৰ": "ª",                // ্ৰ (Assamese ra-phala)
+
+// শ্র / শ্ৰ বেস কেস
+"শ্র": "kª",
+"শ্ৰ": "kª",
+
+
+      // যুক্তবর্ণ সেকশন
+      "ক্ক": "°",      "ক্ট": "±",      "ক্ত": "³",      "ক্ব": "K¡",     "ক্র": "µ",   "ক্লি": "wK¬",    "ক্ল": "K¬",     "ক্ষ": "¶",      "ক্স": "·",      "খ্র": "Lª",     "গ্দ": "M&`",
+      "গ্ধ": "»",      "গ্ন": "Mœ",     "গ্ম": "M¥",     "গ্র": "MÖ",     "গ্ল": "Mø",     "ঙ্ক": "¼",      "ঙ্খ": "•L",     "ঙ্গ": "½",      "ঙ্ঘ": "•N",     "চ্চ": "”P",
+      "চ্ছ": "”Q",     "জ্জ": "¾",      "জ্ঝ": "À",      "জ্ঞ": "Á",      "জ্ব": "R¡",     "জ্র": "Rª",     "ঞ্চ": "Â",      "ঞ্ছ": "Ã",      "ঞ্জ": "Ä", "ন্ব": "š^",
+      "ঞ্ঝ": "Å",      "ট্ট": "Æ",      "ট্ব": "U¡",     "ট্ম": "U¥",     "ট্র": "Uª",     "ড্ড": "Ç",      "ড্র": "Wª",     "ঢ্র": "Xª",     "ণ্ট": "È",   "ত্ব": "Z¡",
+      "ণ্ঠ": "É",      "ণ্ড": "Ð",      "ণ্ণ": "Yœ",     "ত্ত": "Ë",      "ত্থ": "Ì",      "ত্ন": "Zœ",     "ত্ম": "Z¥",     "ত্র": "Î",      "দ্দ": "Ï",   "ঙ্ম": "•g", 
+      "দ্ধ": "×",      "দ্ব": "Ø",      "দ্ভ": "™¢",     "দ্ম": "Ù",      "দ্র": "`ª",     "ধ্ব": "aŸ",     "ধ্ম": "a¥",     "ন্ত": "šÍ",     "ন্থ": "š’", "ক্ম": "´",
+      "ন্দ": "›`",     "ন্ধ": "Ü",      "ন্ন": "bœ",     "ন্ম": "b¥",     "প্ট": "Þ",      "প্ত": "ß",      "প্ন": "cœ",     "প্প": "à",      "প্র": "cÖ",  "ক্ষ্ণ": "ÿè",
+      "প্ল": "cø",     "প্স": "á",      "ফ্র": "d«",     "ফ্ল": "d¬",     "ব্জ": "â",      "ব্দ": "ã",      "ব্ধ": "ä",      "ব্ব": "eŸ",     "ব্র": "eª", "গ্গ": "¹",
+      "ব্ল": "eø",     "ভ্র": "å",      "ম্ন": "gœ",     "ম্ফ": "ç",      "ম্ব": "¤^",     "ম্ভ": "¤¢",     "ম্ম": "¤§",     "ম্র": "gª",     "ম্ল": "¤ø",  "থ্ব": "_¡",
+      "ল্ক": "é",      "ল্গ": "ê",      "ল্ট": "ë",      "ল্ড": "ì",      "ল্প": "í",      "ল্ব": "j¦",     "ল্ম": "j¥",     "ল্ল": "jø",     "শ্চ": "ð",  "দ্দ্ব": "Ï¡",
+      "শ্ন": "kœ",     "শ্ব": "k¦",     "শ্ম": "k¥",     "শ্ল": "kø",     "ষ্ক": "®‹",     "ষ্ট": "ó",      "ষ্ঠ": "ô",      "ষ্ণ": "ò",      "ষ্প": "®ú",  "ন্ত্ব": "šÍ¡",
+      "ষ্ফ": "õ",      "ষ্ম": "®§",     "স্ক": "¯‹",     "স্খ": "ö",      "স্ট": "÷",      "স্ত": "¯Í",     "স্থ": "¯’",     "স্ন": "mœ",     "স্প": "¯ú",  "স্রূ": "¯ªƒ",
+      "স্ফ": "ù",      "স্ব": "¯^",     "সম": "¯§",     "স্ল": "¯ø",     "হ্ণ": "nè",     "হ্ন": "ý",      "হ্ম": "þ",      "হ্ল": "n¬",     "হু": "û",  
+      "হৃ": "ü",      "গু": "¸",      "শু": "ï",      "ক্ত্র": "³ª",     "ক্ন": "Kè",     "ক্ষ্ণ": "òœ",     "ক্ষ্ম": "²",      "ক্ষ্র": "ÿ«",     "গ্ব": "M&e",
+      "ঘ্ন": "Nœ",     "ঘ্র": "Nª",     "ঙ্গু": "½y",     "জ্জ্ব": "¾¡",   "ত্ত্ব": "Ë¡",     "ত্রু": "Îæ",     "দ্রু": "`ªæ",    "ভ্রু": "åæ",     "শ্রু": "kÖæ",
+      "ম্প": "¤ú",     "্র্য": "ª‍¨",    "র‌্য": "i¨",     "ক্য": "K¨",     "ল্যু": "j¨y",    "ক্লু": "K¬z",    "ত্র্য": "Î¨",     "স্থ্য": "¯’¨",    "দ্য": "`¨",
+      "ক্য": "K¨",     "ভ্য": "f¨",     "ল্য": "j¨",   "দ্যু": "`y¨",     "ম্য": "g¨",     "ন্য": "b¨",     "ণ্য": "Y¨",     "কার্য": "Kvh©",   "র্ষ": "l©",       "র্য": "h©",  
+    "ব্যু": "ey¨",   "ত্ব": "Z¡", "হ্ব": "nŸ", "গ্নু": "Mœy", "র্ু": "z©",       "৳": "$",      "র্ষূ": "l~©",        "র্ষু": "ly©",    "–": "-","৷": "|",
+    };
+
+    // --- Bijoy → Unicode ---
+    const bijoyToUnicodeMap = {
+      // স্বরবর্ণ সেকশন
+      "A": "অ",        "Av": "আ",       "B": "ই",        "C": "ঈ",        "D": "উ",        "E": "ঊ",        "F": "ঋ",        "G": "এ",        "H": "ঐ",        "I": "ও",
+      "J": "ঔ",
+
+      // *** সংশোধিত অংশ ***
+      "†": "ে", // e-kar
+      "ˆ": "ৈ", // oi-kar
+      "‡": "ে",
+      "‰": "ৈ",
+
+      // ব্যাঞ্জনবর্ণ
+      "K": "ক",        "L": "খ",        "M": "গ",        "N": "ঘ",        "O": "ঙ",        "P": "চ",        "Q": "ছ",        "R": "জ",        "S": "ঝ",        "T": "ঞ",
+      "U": "ট",        "V": "ঠ",        "W": "ড",        "X": "ঢ",        "Y": "ণ",        "Z": "ত",        "_": "থ",        "`": "দ",        "a": "ধ",        "b": "ন",
+      "c": "প",        "d": "ফ",        "e": "ব",        "f": "ভ",        "g": "ম",        "h": "য",        "i": "র",        "j": "ল",        "k": "শ",        "l": "ষ",
+      "m": "স",        "n": "হ",        "o": "ড়",        "p": "ঢ়",        "q": "য়",        "r": "ৎ",        "s": "ং",        "t": "ঃ",        "u": "ঁ",
+
+      // নম্বর
+      "0": "০",        "1": "১",        "2": "২",        "3": "৩",        "4": "৪",        "5": "৫",        "6": "৬",        "7": "৭",        "8": "৮",        "9": "৯",
+      "৳": "৳",
+
+      // কার চিহ্ন
+      "v": "া",        "w": "ি",        "x": "ী",        "y": "ু",        "~": "ূ",        "„": "ৃ",     "‡v": "ো",   "z": "ু",   "†v": "ো",    "†Š": "ৌ",   "‡Š": "ৌ",
+
+      // ফলা
+      "ª": "্র",        "¨": "্য",        "©": "র্",    "Ö": "্র",
+
+      // ওকার ঔকার
+      "Š": "ৗ",
+
+      // জয়েনার
+      "&": "্",
+      // য/য-ফলা/ইয়
+"q": "য়",          // independent ইয়
+"¨": "্য",         // য-ফলা
+
+// রফলা / Assamese rafala — দুপথেই acceptable
+"ª": "্র",         // ডিফল্ট
+// ঐচ্ছিক: চাইলে নিচের লাইনটি আনকমেন্ট করে Assamese প্রায়োরিটি দিতে পারেন
+// "ª": "্ৰ",
+
+// শ্র / শ্ৰ
+"kª": "শ্র",       // ডিফল্ট Bengali
+// চাইলে Assamese প্রায়োরিটি:
+// "kª": "শ্ৰ",
+
+
+      // বিবিধ
+      "|": "।",        "||": "॥",       "Ô": "‘",        "Õ": "’",        "Ò": "“",        "Ó": "”",        " ": " ",        ".": ".",        ",": ",",        "-": "-",
+      "?": "?",        "!": "!",        "'": "'",        "(": "(",        ")": ")", "iæ": "রু", "eªæ": "ব্রু",   "Zz": "তু",   "nŸ": "হ্ব",
+
+      // যুক্তবর্ণ (partial – full list from your snippet)
+      "°": "ক্ক",      "±": "ক্ট",      "³": "ক্ত",      "K¡": "ক্ব",     "µ": "ক্র",  "wK¬": "ক্লি",     "K¬": "ক্ল",     "¶": "ক্ষ",      "·": "ক্স",      "Lª": "খ্র",     "M&`": "গ্দ",
+      "»": "গ্ধ",      "Mœ": "গ্ন",     "M¥": "গ্ম",     "MÖ": "গ্র",     "Mø": "গ্ল",     "¼": "ঙ্ক",      "•L": "ঙ্খ",     "½": "ঙ্গ",      "•N": "ঙ্ঘ",     "”P": "চ্চ",
+      "”Q": "চ্ছ",     "¾": "জ্জ",      "À": "জ্ঝ",      "Á": "জ্ঞ",      "R¡": "জ্ব",     "Rª": "জ্র",     "Â": "ঞ্চ",      "Ã": "ঞ্ছ",      "Ä": "ঞ্জ",   "cÖæ": "প্রু",
+      "Å": "ঞ্ঝ",      "Æ": "ট্ট",      "U¡": "ট্ব",     "U¥": "ট্ম",     "Uª": "ট্র",     "Ç": "ড্ড",      "Wª": "ড্র",     "Xª": "ঢ্র",     "È": "ণ্ট",  "MÖæ": "গ্রু",
+      "É": "ণ্ঠ",      "Ð": "ণ্ড",      "Yœ": "ণ্ণ",     "Ë": "ত্ত",      "Ì": "ত্থ",      "Zœ": "ত্ন",     "Z¥": "ত্ম",     "Î": "ত্র",      "Ï": "দ্দ",  "¯ª": "স্র",
+      "×": "দ্ধ",      "Ø": "দ্ব",      "™¢": "দ্ভ",     "Ù": "দ্ম",      "`ª": "দ্র",     "aŸ": "ধ্ব",     "a¥": "ধ্ম",     "šÍ": "ন্ত",     "š’": "ন্থ",   "e„©": "র্বৃ",
+      "›`": "ন্দ",     "Ü": "ন্ধ",      "bœ": "ন্ন",     "b¥": "ন্ম",     "Þ": "প্ট",      "ß": "প্ত",      "cœ": "প্ন",     "à": "প্প",      "cÖ": "প্র",   "¤œ": "ম্ন",
+      "cø": "প্ল",     "á": "প্স",      "d«": "ফ্র",     "d¬": "ফ্ল",     "â": "ব্জ",      "ã": "ব্দ",      "ä": "ব্ধ",      "eŸ": "ব্ব",     "eª": "ব্র",  "´": "ক্ম",
+      "eø": "ব্ল",     "å": "ভ্র",      "gœ": "ম্ন",     "ç": "ম্ফ",      "¤^": "ম্ব",     "¤¢": "ম্ভ",     "¤§": "ম্ম",     "gª": "ম্র",     "¤ø": "ম্ল",  "ÿè": "ক্ষ্ন",
+      "é": "ল্ক",      "ê": "ল্গ",      "ë": "ল্ট",      "ì": "ল্ড",      "í": "ল্প",      "j¦": "ল্ব",     "j¥": "ল্ম",     "jø": "ল্ল",     "ð": "শ্চ",   "ÿ&Y": "ক্ষ্ণ",
+      "kœ": "শ্ন",     "k¦": "শ্ব",     "k¥": "শ্ম",     "kø": "শ্ল",     "®‹": "ষ্ক",     "ó": "ষ্ট",      "ô": "ষ্ঠ",      "ò": "ষ্ণ",      "®ú": "ষ্প",   "¹": "গ্গ",
+      "õ": "ষ্ফ",      "®§": "ষ্ম",     "¯‹": "স্ক",     "ö": "স্খ",      "÷": "স্ট",      "¯Í": "স্ত",     "¯’": "স্থ",     "mœ": "স্ন",     "¯ú": "স্প",  "M&M": "গ্গ",
+      "ù": "স্ফ",      "¯^": "স্ব",     "¯§": "স্ম",     "¯ø": "স্ল",     "nè": "হ্ণ",     "ý": "হ্ন",      "þ": "হ্ম",      "n¬": "হ্ল",     "û": "হু",  "_¡": "থ্ব",
+      "ü": "হৃ",      "¸": "গু",      "ï": "শু",      "³ª": "ক্ত্র",     "Kè": "ক্ন",     "òœ": "ক্ষ্ণ",     "²": "ক্ষ্ম",      "ÿ«": "ক্ষ্র",     "M&e": "গ্ব", "Ï¡": "দ্দ্ব",
+      "Nœ": "ঘ্ন",     "Nª": "ঘ্র",     "½y": "ঙ্গু",     "¾¡": "জ্জ্ব",   "Ë¡": "ত্ত্ব",     "Îæ": "ত্রু",     "`ªæ": "দ্রু",     "åæ": "ভ্রু",     "kÖæ": "শ্রু",  "šÍ¡": "ন্ত্ব",
+      "¤ú": "ম্প",     "ª‍¨": "্র্য",    "i¨": "র‌্য",     "K¨": "ক্য",     "j¨y": "ল্যু",    "K¬z": "ক্লু",    "Î¨": "ত্র্য",     "¯’¨": "স্থ্য",    "`¨": "দ্য",  "gø": "ম্ল",
+      "f¨": "ভ্য",     "j¨": "ল্য",     "g¨": "ম্য",     "b¨": "ন্য",     "Y¨": "ণ্য",     "Kv¨": "ক্যা",      "l©": "র্ষ", "ÿ": "ক্ষ",   "åƒ": "ভ্রূ",  "¯ªƒ": "স্রূ",
+      "Z¡": "ত্ব", "Û": "ন্ড", "š¿": "ন্ত্র",    "z©": "র্ু",   "y¨": "্যু",      "©…": "র্ৃ",     "‚©": "র্ূ",  "•ÿ": "ঙ্ক্ষ", "b¦": "ন্ব", "¯cø": "স্প্ল",
+      "~¨": "্যূ",   "z¨": "্যু",        "‚¨": "্যূ",   "Kz©¨": "র্্যু",   "K‚©¨": "র্্যূ",  "³": "ক্ত",       "¯‘": "স্তু",   "¯¿": "স্ত্র",   "vu": "াঁ",   "œ": "্ন", "¼Í": "ঙ্ক্ত",
+      "uv": "াঁ",  "›Uª": "ন্ট্র",     "n«": "হ্র",     "š‘": "ন্তু",     "Z…": "তৃ",     "K…": "কৃ",     "P‚": "চূ",     "f‚": "ভূ",     "iƒ": "রূ",   "¦": "্ব",
+      "›U": "ন্ট",    "«": "্র",     "…": "ৃ",     "‚": "ূ",       "æ": "ু",      "Ý": "ন্স",      "š^": "ন্ব",    "ly©": "র্ষু",   "l~©": "র্ষূ", "MÖƒ": "গ্রূ", "cÖƒ": "প্রূ", 
+      "eªƒ": "ব্রূ", "kÖƒ": "শ্রূ", "_¦": "থ্ব", "˜M": "দ্গ", "˜N": "দ্ঘ", "Ï": "দ্দ", "$": "৳", "K¥": "ক্ম", "M&M": "গ্গ", "º": "গ্দ", "O¥": "ঙ্ম", "”T": "চ্ঞ", 
+      "Y&X": "ণ্ঢ", "Y¥": "ণ্ম", "Zø": "ত্ল", "Îƒ": "ত্রূ", "_ø": "থ্ল", "™£": "দ্ভ্র", "`ªƒ": "দ্রূ", "Ú": "ন্ঠ", "šÍ¦": "ন্ত্ব", "fø": "ভ্ল", "¤£": "ম্ভ্র", "¤ø": "ম্ল",
+      "î": "ল্ফ", "ñ": "শ্ছ", "®Œ": "ষ্ক্র", "¯Œ": "স্ক্র", "—M": "ড়্গ", "aªƒ": "ধ্রূ", "¯úø": "স্প্ল", "¤úø": "ম্প্ল", "•g": "ঙ্ম",   "mø": "স্ল", "¯": "্স", "f‚©": "র্ভূ", "fz©": "র্ভু", 
+    };
+
+    // Manual replacement tables (ANSI-side & Unicode-side corrections)
+    const manualAnsiReplacements = {
+      "GZ‡": "G‡Z",
+      "‡ga¨": "g‡a¨",      "Ëw": "wË",       "P&P": "”P",      "¨y": "y¨",       "©„": "©…",        "—": "-",        "ów": "wó",
+      "+‡": "+†",        "+‰": "+ˆ",       "vu": "uv",       "xu": "ux",       "Šu": "uŠ",      "`¨y": "`y¨",     "f©w": "wf©",     "³w": "w³",       "_©w": "w_©",
+      "Mœw": "wMœ",       "K¬w": "wK¬",      "¯’w": "w¯’",      "Ô‡": "Ô†",       "Ò‡": "Ò†",      "-‡": "-†",       "(‡": "(†",       "Ô‰": "Ôˆ",
+      "Ò‰": "Òˆ",        "-‰": "-ˆ",       "(‰": "ˆ",       "¶y": "ÿz",       "ww¯’Z": "w¯’wZ",      "cz©": "c©y",     "‡‡": "‡",        "††": "†", "©z": "z©",
+      "‰‰": "‰",         "ˆˆ": "ˆ",        "yy": "y",        "~~": "~",        "©©": "©",       "„„": "„",        "&&": "&",        "ªª": "ª",        "ŠŠ": "Š",
+      "/‡": "/†",        "/‰": "(ˆ",       "=‡": "=†",       "=‰": "=ˆ",       "[‡": "[†",      "[‰": "[ˆ",      "{‡": "{†",       "{‰": "{ˆ",       " ‡": " †",
+      " ‰": " ˆ",        " Ó": " Ò",      " Õ": " Ô",      "&;": "Ê",        "&|": "\\",      "&~": "E",        "&„": "F",        "&‡": "G",        "&‰": "H",
+      "&b": "œ",         "&e": "¦",        "&g": "¥",        "&I": "I",        "&I&h": "I¨",    "&I&i": "Iª",     "&j": "ø",        "&Ô": "“",        "&Š": "J",
+      "&v": "Av",        "&w": "B",        "&x": "C",        "&y": "D",        "&Z": "Í",        "(A)i": "(A)i",  "_&_": "Ì",       "_&e": "_¡",       "_&h": "_¨",
+      "_&i": "_ª",        "_ª": "_ª",        "_u_": "Ì",       "`&`": "Ï",       "`&a": "×",       "`&e": "Ø",        "`&f": "™¢",      "`&g": "Ù",        "`&h": "`¨",
+      "`&i": "`ª",        "`&M": "˜M",       "`&N": "˜N",       "`ª": "`ª",       "`ª~": "`ªƒ",      "`ªy": "`ªæ",      "¯’~": "¯’‚",      "¯’„": "¯’…",      "¯’y": "¯’z",
+      "¯‹&i": "¯Œ",       "¯‹&iæ": "¯Œz",   "¯‹&j": "¯‹¬",    "¯‹~": "¯‹‚",      "¯‹„": "¯‹…",      "¯‹¬y": "¯‹¬z",   "¯‹ª": "¯Œ",      "¯‹y": "¯‹z",      "¯Í&e": "¯Í¡",
+      "¯Í&i": "¯¿",       "¯Í~": "¯Í‚",      "¯Í„": "¯Í…",      "¯Íª": "¯¿",       "¯Íy": "¯‘",      "¯Œ~": "¯Œ‚",      "¯Œ„": "¯Œ„",      "¯Œy": "¯Œz",      "¯úª": "¯úÖ",    "¯úª~": "¯úÖƒ",   "¯úªy": "¯úÖæ",   "°~": "°‚",
+      "°„": "°…",        "°y": "°z",        "µ~": "µ‚",       "µ„": "µ…",       "µy": "µz",       "•ÿ~": "•ÿ‚",      "•ÿ„": "•ÿ…",      "•ÿy": "•ÿz",      "¼&l": "•ÿ",
+      "¼~": "¼‚",        "¼„": "¼…",       "¼«~": "¼«‚",      "¼«„": "¼«…",      "¼«y": "¼«z",      "¼ª": "¼«",       "¼y": "¼z",       "¾&e": "¾¡",      "³~": "³‚",
+      "³„": "³…",        "³ª": "³«",       "³y": "³z",       "a&e": "aŸ",       "a&g": "a¥",       "a&h": "a¨",       "A&h": "A¨",       "a&i": "aª",       "A&i": "Aª",
+      "Á~": "Á‚",        "À~": "À‚",       "ä~": "ä‚",       "Ã~": "Ã‚",       "å~": "åƒ",       "Â‚": "Â‚",       "Á„": "Á…",       "À„": "À…",       "ä„": "ä…",
+      "Ã„": "Ã…",        "Â…": "Â…",       "aª": "aª",       "Aª": "Aª",       "aª~": "aªƒ",      "aªy": "aªæ",      "Æ~": "Æ‚",       "Æ„": "Æ…",       "Æy": "Æz",
+      "Av&h": "Av¨",     "Av&i": "Avª",    "Avª": "Avª",      "Áy": "Áz",       "Ây": "Âz",       "äy": "äz",       "Ãy": "Ãz",       "åy": "åæ",       "Àz": "Àz",
+      "b&_": "š’",       "b&`": "›`",      "b&a": "Ü",       "b&b": "bœ",       "b&e": "š^",       "b&g": "b¥",       "b&h": "b¨",       "B&h": "B¨",       "b&i": "bª",
+      "B&i": "Bª",        "b&m": "Ý",        "b&U": "›U",      "b&V": "Ú",       "b&W": "Û",       "b&Z": "šÍ",      "b&Z&i": "š¿",    "b&Zª": "š¿",      "bª": "bª",
+      "Bª": "Bª",         "c&b": "cœ",       "c&c": "à",       "c&h": "c¨",       "C&h": "C¨",       "c&i": "cÖ",       "C&i": "Cª",       "c&j": "cø",       "c&m": "á",
+      "c&U": "Þ",        "c&Z": "ß",       "ç~": "ç‚",       "Ç~": "Ç‚",       "ç„": "ç…",       "Ç„": "Ç…",       "cª": "cÖ",       "Cª": "Cª",       "cª~": "cÖƒ",
+      "cªy": "cÖæ",      "cÖ~": "cÖƒ",      "cÖy": "cÖæ",      "çy": "çz",       "Çy": "Çz",       "d&h": "d¨",       "d&i": "d«",       "D&i": "Dª",       "d&j": "d¬",
+      "d~": "d‚",        "ð~": "ð‚",       "Ð~": "Ð‚",       "d„": "d…",       "ð„": "ð…",       "Ð„": "Ð…",       "d«~": "d«‚",      "d«„": "d«…",      "d«y": "d«z",
+      "d¬~": "d¬‚",      "d¬„": "d¬„",      "d¬y": "d¬z",      "dª": "d«",       "dy": "dz",       "ðy": "ðz",       "Ðy": "Ðz",       "e&`": "ã",       "e&a": "ä",
+      "e&e": "eŸ",       "Ë&e": "Ë¡",      "e&h": "e¨",       "e&i": "eª",       "E&i": "Eª",       "e&j": "eø",       "e&R": "â",       "é~": "é‚",       "É~": "É‚",
+      "È~": "È‚",        "ë~": "ë‚",      "Ë~": "Ë‚",       "é„": "é…",       "É„": "É…",       "È„": "È…",       "ë„": "ë…",       "Ë„": "Ë…",       "eª": "eª",
+      "eª~": "eªƒ",      "eªy": "eªæ",      "éy": "éz",       "Éy": "Éz",       "Èy": "Èz",       "ëy": "ëz",       "Ëy": "Ëz",       "f&h": "f¨",       "F&h": "F¨",
+      "f&i": "å",        "F&i": "Fª",       "f&j": "fø",      "f~": "f‚",       "f„": "f…",       "fª": "å",        "Fª": "Fª",       "fª~": "åƒ",      "fªy": "åæ",
+      "fy": "fz",        "g&b": "¤œ",       "g&c": "¤ú",      "g&d": "ç",       "g&e": "¤^",       "g&f": "¤¢",       "g&f&i": "¤£",    "g&fª": "¤£",      "g&g": "¤§",
+      "g&h": "g¨",       "G&h": "G¨",       "g&i": "¤ª",      "G&i": "Î",       "g&j": "¤ø",       "gª": "¤ª",       "Gª": "Gª",       "h&h": "h¨",       "H&h": "H¨",
+      "h&i": "hª",       "H&i": "Hª",       "hª": "hª",       "Hª": "Hª",       "i&&I": "I©",     "i&_": "_©",       "i&`": "`©",      "i&a": "a©",       "i&A": "A©",
+      "i&Av": "Av©",     "i&b": "b©",       "i&B": "B©",       "i&c": "c©",       "i&C": "C©",       "i&d": "d©",       "i&D": "D©",       "i&e": "e©",       "i&E": "E©",
+      "i&f": "f©",       "i&F": "F©",       "i&g": "g©",       "i&G": "G©",       "i&h": "h©",       "i&H": "H©",       "i&i": "iª",       "i&I": "I©",       "I&i": "Iª",
+      "i&j": "j©",       "i&J": "J©",       "i&k": "k©",       "i&K": "K©",       "i&l": "l©",       "i&L": "L©",       "i&m": "m©",       "i&M": "M©",       "i&n": "n©",
+      "i&N": "N©",       "i&o": "o©",       "i&O": "O©",       "i&p": "p©",       "i&P": "P©",       "i&q": "q©",       "i&Q": "Q©",       "i&R": "R©",       "i&S": "S©",
+      "i&T": "T©",       "i&U": "U©",       "i&V": "V©",       "i&W": "W©",       "i&X": "X©",       "i&Y": "Y©",       "i&Z": "Z©",       "i~": "iƒ",        "î~": "î~",
+      "Î~": "Îƒ",       "î„": "î…",       "iª": "iª",        "Iª": "Iª",        "îª": "î«",       "iy": "iæ",        "îy": "îz",        "Îy": "Îæ",       "j&c": "í",
+      "j&d": "î",        "j&d&i": "î«",     "j&dª": "î«",      "j&e": "j¦",       "j&g": "j¥",       "j&h": "j¨",       "J&h": "J¨",       "j&i": "jª",       "j&j": "jø",
+      "j&K": "é",        "j&M": "ê",        "j&U": "ë",       "j&W": "ì",        "jª": "jª",        "Jª": "Jª",        "k&b": "kœ",       "K&b": "Kè",       "k&e": "k¦",
+      "K&e": "K¡",       "k&g": "k¥",       "K&g": "´",        "k&h": "k¨",       "K&h": "K¨",       "k&i": "kÖ",       "K&i": "µ",        "K&j": "K¬",       "K&K": "°",
+      "K&l": "ÿ",        "K&m": "·",        "k&P": "ð",       "k&Q": "ñ",        "K&U": "±",       "K&Z": "³",       "K&Zª": "³«",      "K~": "K‚",        "K„": "K…",
+      "K¬~": "K¬‚",      "K¬„": "K¬…",      "K¬y": "K¬z",      "kª": "kÖ",       "Kª": "µ",        "kª~": "kÖƒ",      "Kª~": "µ’",      "kªy": "kÖæ",      "Kªy": "µ",
+      "Kè~": "Kè‚",      "Kè„": "Kè…",      "Kèy": "Kèz",      "kÖ~": "kÖƒ",      "kÖy": "kÖæ",      "ky": "ï",        "Ky": "Kz",        "l&c": "®ú",      "l&d": "õ",
+      "l&g": "®§",       "l&h": "l¨",       "L&h": "L¨",       "l&i": "lª",       "L&i": "Lª",       "l&K": "®‹",       "l&U": "ó",       "l&V": "ô",       "l&Y": "ò",
+      "lª": "lª",        "Lª": "Lª",        "Lª~": "Lªƒ",      "Lªy": "Lªæ",      "m&_": "¯’",       "M&`": "º",       "M&a": "»",       "m&b": "¯œ",       "M&b": "Mœ",
+      "m&c": "¯ú",       "m&d": "ù",        "m&e": "¯^",       "M&e": "M¦",       "m&g": "¯§",       "M&g": "M¥",       "m&h": "m¨",       "M&h": "M¨",       "m&i": "¯ª",
+      "M&i": "MÖ",       "m&j": "¯ø",       "M&j": "Mø",       "m&K": "¯‹",       "m&K&i": "¯Œ",     "m&K&iy": "¯Œz",  "m&Kª": "¯Œ",      "m&Kªy": "¯Œz",    "m&L": "ö",
+      "m&U": "÷",        "m&Z": "¯Í",      "mª": "¯ª",       "Mª": "MÖ",       "Mª~": "MÖƒ",      "Mªy": "MÖæ",      "MÖ~": "MÖƒ",      "MÖy": "MÖæ",      "My": "¸",
+      "n&b": "ý",        "N&b": "Nœ",       "n&e": "nŸ",       "n&e2": "n¡",     "n&g": "þ",        "n&h": "n¨",       "N&h": "N¨",       "n&i": "n«",       "N&i": "Nª",
+      "n&j": "n¬",       "n&Y": "nè",       "ñ~": "ñ‚",       "n„": "ü",        "ñ„": "ñ…",       "nª": "n«",       "Nª": "Nª",       "Nª~": "Nªƒ",      "Nªy": "Nªæ",
+      "ny": "û",         "ñy": "ñz",        "O&g": "•g",       "o&h": "o¨",       "O&h": "O¨",       "o&i": "oª",       "O&i": "Oª",       "O&K": "¼",       "O&L": "•L",
+      "o&M": "—M",       "O&M": "½",        "O&N": "•N",       "O~": "O‚",        "ó~": "ó‚",       "ò~": "ò‚",       "ô~": "ô‚",       "õ~": "õ‚",       "O„": "O…",
+      "ó„": "ó…",        "ò„": "ò…",       "ô„": "ô…",       "õ„": "õ…",       "oª": "oª",       "Oª": "Oª",       "oy": "o–",       "Oy": "Oz",        "óy": "óz",
+      "òy": "òz",        "ôy": "ôz",       "õy": "õz",       "p&h": "p¨",       "P&h": "P¨",       "p&i": "pª",       "P&i": "Pª",       "P&P": "”P",       "P&Q": "”Q",
+      "P&T": "”T",       "P~": "P‚",        "P„": "P…",       "pª": "pª",       "Pª": "Pª",       "Puv": "Pvu",      "Py": "Pz",        "q&h": "q¨",       "Q&h": "Q¨",
+      "q&i": "qª",       "Q&i": "Q«",       "Q~": "Q‚",        "Q„": "Q…",       "qª": "qª",       "Qª": "Q«",       "Qy": "Qz",        "R&e": "R¡",       "R&h": "R¨",
+      "R&i": "Rª",       "R&R": "¾",        "R&S": "À",        "R&T": "Á",       "Rª": "Rª",       "rª\t": "rª",     "S&h": "S¨",       "S&i": "Sª",       "S~": "S‚",
+      "š’~": "š’‚",      "š’„": "š’…",      "š’y": "š’z",      "S„": "S…",       "sª": "sª",       "Sª": "Sª",       "šÍ&i": "š¿",     "šÍ~": "šÍ‚",      "šÍ„": "šÍ…",
+      "šÍª": "š¿",       "šÍy": "š‘",       "ß~": "ß‚",       "ß„": "ß…",       "ßy": "ßz",       "Sy": "Sz",        "T&h": "T¨",       "T&i": "Tª",       "T&P": "Â",
+      "T&Q": "Ã",        "T&R": "Ä",        "T&S": "Å",        "T~": "T‚",        "T„": "T…",       "tª": "tª",       "Tª": "Tª",       "þ~": "þ~",        "Þ~": "Þ‚",
+      "þ„": "þ„",        "Þ„": "Þ…",       "þy": "þz",       "Þy": "Þz",       "Ty": "Tz",        "™¢~": "™¢‚",      "™¢„": "™¢…",      "™¢ª": "™£",      "™¢y": "™¢z",
+      "™£~": "™£ƒ",      "™£y": "™£æ",      "U&e": "U¡",       "U&g": "U¥",       "U&h": "U¨",       "U&i": "Uª",       "U&U": "Æ",       "U~": "U‚",        "Ú~": "Ú‚",
+      "ù~": "ù‚",        "Û~": "Û‚",       "Ü~": "Ü‚",       "U„": "U…",       "Ú„": "Ú…",       "ù„": "ù…",       "Û„": "Û…",       "Ü„": "Ü…",       "ù«~": "ù«‚",
+      "Ü«~": "Ü«‚",      "Ü«„": "Ü«…",      "ù«y": "ù«z",      "Ü«y": "Ü«z",      "Uª": "Uª",       "ùª": "ù«",       "Üª": "Ü«",       "uŠ": "Šu",        "ux": "xu",
+      "uy": "yu",        "Uy": "Uz",        "Úy": "Úz",       "ùy": "ùz",       "Ûy": "Ûz",       "Üy": "Üz",       "V&h": "V¨",       "V&i": "Vª",       "V~": "V‚",
+      "V„": "V…",        "Vª": "Vª",        "Vy": "Vz",        "W&h": "W¨",       "W&i": "Wª",       "W&W": "Ç",       "W~": "W‚",        "W„": "W…",       "Wª": "Wª",
+      "Wy": "Wz",        "X&h": "X¨",       "X&i": "Xª",       "X~": "X‚",        "X„": "X…",       "Xª": "Xª",       "Xy": "Xz",        "Y&b": "Yœ",       "ÿ&b": "ÿè",
+      "Y&e": "Y¦",       "ÿ&g": "²",        "Y&h": "Y¨",       "Y&i": "Yª",       "Y&U": "È",       "Y&V": "É",       "Y&W": "Ð",       "ÿ~": "ÿ‚",         "ÿ„": "ÿ…",
+      "Yª": "Yª",        "ÿè~": "ÿè‚",      "ÿè„": "ÿè…",      "ÿèy": "ÿèz",      "ÿy": "ÿz",       "Z&_": "Ì",       "Z&b": "Zœ",       "Z&e": "Z¡",          "Z&g": "Z¥",
+      "Z&h": "Z¨",       "Z&i": "Î",        "Z&Z": "Ë",       "Z~": "Z‚",        "Z„": "Z…",       "Zª": "Î",        "Zª~": "Îƒ",          "Zªy": "Îæ",           "Zy": "Zz",
+      "|‡": "|†", ",‡": ",†", ".‡": ".†", "-‡": "-†", "?‡": "?†", ":‡": ":†", "=‡": "=†", "|‰": "|ˆ", "K©~": "K‚©", ",‰": ",ˆ", "f¨~": "f‚¨", "f©~": "f‚©",
+      ".‰": ".ˆ", "-‰": "-ˆ", "?‰": "?ˆ", ":‰": ":ˆ", "=‰": "=ˆ",  "wwK¬": "wK¬w", "e©…": "e„©",  "e¨~": "e~¨",      "P©~": "P‚©Ó",    "P©y": "Pz©",     "K©y" :"Kz©", "f©y": "fz©",
+    };
+
+    const manualUnicodeReplacements = {
+      "": "",
+      "মধে্য": "মধ্যে",
+      "ুর্":  "র্ু",
+      "ূর্":  "র্ূ",
+      "র্নিভূল": "নির্ভূল",
+      "র্নিভুল": "নির্ভুল",
+    };
+
+    // Pre-sort keys (longest first)
+    const sortedUnicodeKeys = Object.keys(unicodeToBijoyMap).sort((a,b) => b.length - a.length);
+    const sortedBijoyKeys   = Object.keys(bijoyToUnicodeMap).sort((a,b) => b.length - a.length);
+
+    // ============== Core Converters ==============
+    function convertLeftToRight() { // Unicode -> Bijoy
+      const L = $('textAreaLeft'); const R = $('textAreaRight');
+      let unicodeInput = L ? L.value : '';
+
+      // Char defs
+ const bengaliConsonants = 'কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়ৰৱ';
+
+      const unicodeIkar = '\u09BF'; // ি
+      const unicodeEkar = '\u09C7'; // ে
+      const unicodeOikar = '\u09C8'; // ৈ
+      const unicodeOkar = '\u09CB'; // ো
+      const unicodeOukar = '\u09CC'; // ৌ
+      const unicodeAkar = '\u09BE'; // া
+      const unicodeOuKarPart2 = '\u09D7'; // ৗ
+      const unicodeHasanta = '\u09CD'; // ্
+      const unicodeRefChar = '\u09B0\u09CD'; // র্
+      const unicodeJaPhala = '\u09CD\u09AF'; // ্য
+      const unicodeRaPhala = '\u09CD\u09B0'; // ্র
+const unicodeAssameseRa       = '\u09F0';         // ৰ
+const unicodeAssameseRaPhala  = '\u09CD\u09F0';   // ্ৰ
+
+      // Step 1: Decompose o/au-kar to parts so that 'ে' can move left
+      const consonantOrConjunct = `(?:(?:[${bengaliConsonants}]${unicodeHasanta})+[${bengaliConsonants}]|[${bengaliConsonants}])`;
+      const o_ou_kar_regex = new RegExp(`(${consonantOrConjunct})(${unicodeOkar}|${unicodeOukar})`, 'g');
+      unicodeInput = unicodeInput.replace(o_ou_kar_regex, (match, base, vowelSign) => {
+        if (vowelSign === '\u09CB') return base + '\u09C7' + '\u09BE';
+        if (vowelSign === '\u09CC') return base + '\u09C7' + '\u09D7';
+        return match;
+      });
+
+      // Step 2: Move pre-vowels (ি, ে, ৈ) to the left in Bijoy visual order
+      const precedingVowelRegex = new RegExp(
+  `(${unicodeRefChar})?` +                                  // optional reph "র্"
+  `(${consonantOrConjunct})` +                              // base cluster
+  `((?:${unicodeJaPhala}|${unicodeRaPhala}|${unicodeAssameseRaPhala})?)` + // optional ্য / ্র / ্ৰ
+  `(${unicodeIkar}|${unicodeEkar}|${unicodeOikar})`,        // pre-vowels
+'g');
+
+      unicodeInput = unicodeInput.replace(precedingVowelRegex, (match, reph, base, phala, vowel) => {
+        return vowel + (reph || '') + base + (phala || '');
+      });
+
+      // Step 3: Main mapping loop (with special handling for leading র্ as reph)
+      let bijoyOutput = '';
+      let k = 0;
+      while (k < unicodeInput.length) {
+        let foundMatch = false;
+
+        // Special: reph (র্) followed by a cluster ⇒ map cluster then append ©
+        if (unicodeInput.substring(k, k + 2) === '\u09B0\u09CD') {
+          let baseCluster = ''; let clusterLen = 0;
+          for (const key of sortedUnicodeKeys) {
+            if (key.length > 0 && unicodeInput.substring(k + 2, k + 2 + key.length) === key) {
+              baseCluster = key; clusterLen = key.length; break;
+            }
+          }
+          if (clusterLen > 0) {
+            bijoyOutput += (unicodeToBijoyMap[baseCluster] || baseCluster) + '©';
+            k += 2 + clusterLen; foundMatch = true;
+          }
+        }
+
+        if (!foundMatch) {
+          for (const key of sortedUnicodeKeys) {
+            if (key && unicodeInput.startsWith(key, k)) {
+              bijoyOutput += unicodeToBijoyMap[key];
+              k += key.length; foundMatch = true; break;
+            }
+          }
+        }
+        if (!foundMatch) { bijoyOutput += unicodeInput[k]; k++; }
+      }
+
+      // Step 4: Manual ANSI (Bijoy) replacements (cleanup)
+      for (const [wrong, correct] of Object.entries(manualAnsiReplacements)) {
+        if (!wrong) continue;
+        bijoyOutput = bijoyOutput.replace(new RegExp(escapeRegExp(wrong), 'g'), correct);
+      }
+
+      // Step 5: Line-begin corrections for e/oi-kar
+      bijoyOutput = bijoyOutput.replace(/^‡/gm, '†').replace(/\|‡/g, '|†');
+      bijoyOutput = bijoyOutput.replace(/^‰/gm, 'ˆ').replace(/\|‰/g, '|ˆ');
+
+      if ($('textAreaRight')) {
+        $('textAreaRight').value = bijoyOutput; addState('textAreaRight');
+      }
+    }
+
+    function convertRightToLeft() { // Bijoy -> Unicode
+  const L = $('textAreaLeft'); const R = $('textAreaRight');
+  let bijoyInput = R ? R.value : '';
+
+  // Step 1: Bijoy tokenization & mapping
+  let unicodeOutput = '';
+  let i = 0;
+  while (i < bijoyInput.length) {
+    let found = false;
+    for (const key of sortedBijoyKeys) {
+      if (bijoyInput.startsWith(key, i)) {
+        unicodeOutput += (bijoyToUnicodeMap[key] ?? key);
+        i += key.length; found = true; break;
+      }
+    }
+    if (!found) { unicodeOutput += bijoyInput[i]; i++; }
+  }
+
+  // ============== Step 2: Reordering back to logical Unicode ==============
+  const unicodeIkar   = '\u09BF'; // ি
+  const unicodeEkar   = '\u09C7'; // ে
+  const unicodeOikar  = '\u09C8'; // ৈ
+  // Consonant range + nukta letters + Assamese ৰ/ৱ
+  const unicodeConsonants = '\u0995-\u09B9\u09DC-\u09DF\u09F0-\u09F1';
+  const unicodeHasanta = '\u09CD'; // ্
+  const unicodeRef     = '\u09B0' + unicodeHasanta; // র্
+
+  // 2.1 Reph reorder: C + র্  → র্ + C  (visual → logical)
+  const consonantClusterWithoutRef =
+    `(?:[${unicodeConsonants}](?:${unicodeHasanta}[${unicodeConsonants}])*)`;
+  const rephReorderRegex =
+    new RegExp(`(${consonantClusterWithoutRef})(${unicodeRef})`, 'g');
+  unicodeOutput = unicodeOutput.replace(rephReorderRegex, '$2$1');
+
+  // 2.2 Pre-vowel placement (ি/ে/ৈ): bring after cluster (handles ্য/্র/্ৰ at tail)
+  const jaPhala         = '\u09CD\u09AF'; // ্য
+  const raPhala         = '\u09CD\u09B0'; // ্র
+  const assamRaPhala    = '\u09CD\u09F0'; // ্ৰ
+
+  const clusterWithOptionalPhala =
+    `(?:${unicodeRef})?` + // optional leading Reph "র্"
+    `(?:[${unicodeConsonants}](?:${unicodeHasanta}[${unicodeConsonants}])*)` + // base conjunct
+    `(?:${jaPhala}|${raPhala}|${assamRaPhala})?`; // optional tail phala
+
+  const preVowelReorder =
+    new RegExp(`([${unicodeIkar}${unicodeEkar}${unicodeOikar}])(${clusterWithOptionalPhala})`, 'g');
+  unicodeOutput = unicodeOutput.replace(preVowelReorder, '$2$1');
+
+  // 2.3 Compose o/au-kar:  ে + া  → ো,   ে + ৗ → ৌ
+  const unicodeAkar       = '\u09BE'; // া
+  const unicodeOkar       = '\u09CB'; // ো
+  const unicodeOuKarPart2 = '\u09D7'; // ৗ
+  const unicodeOukar      = '\u09CC'; // ৌ
+  unicodeOutput = unicodeOutput.replace(new RegExp(`(${unicodeEkar})(${unicodeAkar})`, 'g'), unicodeOkar);
+  unicodeOutput = unicodeOutput.replace(new RegExp(`(${unicodeEkar})(${unicodeOuKarPart2})`, 'g'), unicodeOukar);
+
+  // Step 3: Manual Unicode cleanups (optional self-heal)
+  for (const [wrong, correct] of Object.entries(manualUnicodeReplacements)) {
+    if (!wrong) continue;
+    unicodeOutput = unicodeOutput.replace(new RegExp(escapeRegExp(wrong), 'g'), correct);
+  }
+
+  if (L) { L.value = unicodeOutput; addState('textAreaLeft'); }
+}
+
+
+    // ============== Wiring ==============
+    function copy(id){ const el=$(id); if(!el) return; navigator.clipboard?.writeText(el.value); }
+    function pasteTo(id){ const el=$(id); if(!el) return; navigator.clipboard?.readText().then(t=>{ el.value=t; addState(id); }); }
+    function clearBox(id){ const el=$(id); if(!el) return; el.value=''; addState(id); }
+    function download(id, name){ const el=$(id); if(!el) return; const blob=new Blob([el.value], {type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+    function uploadTo(inputId, targetId){ $(inputId).addEventListener('change', e=>{ const f=e.target.files[0]; if(!f) return; const reader=new FileReader(); reader.onload=ev=>{ $(targetId).value=ev.target.result; addState(targetId); }; reader.readAsText(f); }); }
+
+    $('u2b').addEventListener('click', convertLeftToRight);
+    $('b2u').addEventListener('click', convertRightToLeft);
+    $('swap').addEventListener('click', ()=>{
+      const L=$('textAreaLeft'), R=$('textAreaRight');
+      const tmp=L.value; L.value=R.value; R.value=tmp; addState('textAreaLeft'); addState('textAreaRight');
+    });
+
+    $('copyL').onclick=()=>copy('textAreaLeft');
+    $('copyR').onclick=()=>copy('textAreaRight');
+    $('pasteL').onclick=()=>pasteTo('textAreaLeft');
+    $('pasteR').onclick=()=>pasteTo('textAreaRight');
+       $('clearL').onclick=()=>clearBox('textAreaLeft');
+    $('clearR').onclick=()=>clearBox('textAreaRight');
+
+    $('downloadL').onclick=()=>download('textAreaLeft','unicode.txt');
+    $('downloadR').onclick=()=>download('textAreaRight','bijoy.txt');
+
+    uploadTo('uploadL','textAreaLeft');
+    uploadTo('uploadR','textAreaRight');
+
+    // Bijoy font toggle
+    $('bijoyFont').addEventListener('change', (e)=>{
+      const R = $('textAreaRight');
+      if (e.target.checked) R.classList.add('sutonny');
+      else R.classList.remove('sutonny');
+      // persist
+      localStorage.setItem('ub_bijoyFont', e.target.checked ? '1':'0');
+    });
+
+    // Auto-convert toggles (persist)
+    $('autoL').addEventListener('change', (e)=>{
+      localStorage.setItem('ub_autoL', e.target.checked ? '1':'0');
+    });
+    $('autoR').addEventListener('change', (e)=>{
+      localStorage.setItem('ub_autoR', e.target.checked ? '1':'0');
+    });
+
+    // Sample text
+    $('sample1').addEventListener('click', ()=>{
+      const sample = 'বাংলা লেখা → বিজয় (Bijoy) ↔ Unicode রূপান্তর পরীক্ষা: ক্ব, ক্ষ্ণ, শ্রু, র্য, র্ + ক্ল, ত্র্য, স্ব, স্প্ল, দ্ধ, জ্ঞ, য়-ফলা, র্-ফলা, ঔ-কার, ৗ, ১০২৩৪৫৬৭৮৯।';
+      $('textAreaLeft').value = sample;
+      addState('textAreaLeft');
+      if ($('autoL').checked) convertLeftToRight();
+    });
+
+    // Undo/Redo per side (based on focus; default left)
+    function currentSideId(){
+      const ae = document.activeElement;
+      if (ae && (ae.id === 'textAreaLeft' || ae.id === 'textAreaRight')) return ae.id;
+      return 'textAreaLeft';
+    }
+    $('undo').addEventListener('click', ()=>applyState(currentSideId(), -1));
+    $('redo').addEventListener('click', ()=>applyState(currentSideId(), +1));
+
+    // Auto convert on input with loop guard
+    let isSyncing = false;
+    $('textAreaLeft').addEventListener('input', ()=>{
+      addState('textAreaLeft');
+      if (isSyncing || !$('autoL').checked) return;
+      isSyncing = true;
+      try { convertLeftToRight(); } finally { isSyncing = false; }
+    });
+    $('textAreaRight').addEventListener('input', ()=>{
+      addState('textAreaRight');
+      if (isSyncing || !$('autoR').checked) return;
+      isSyncing = true;
+      try { convertRightToLeft(); } finally { isSyncing = false; }
+    });
+
+    // Keyboard shortcuts: Ctrl/Cmd+Z / Ctrl/Cmd+Y for focused textarea
+    document.addEventListener('keydown', (e)=>{
+      const id = currentSideId();
+      const isZ = (e.key === 'z' || e.key === 'Z');
+      const isY = (e.key === 'y' || e.key === 'Y');
+      if ((e.ctrlKey || e.metaKey) && (isZ || isY)) {
+        e.preventDefault();
+        applyState(id, isZ ? -1 : +1);
+      }
+    });
+
+    // Restore persisted state on load
+    (function init(){
+      const L = $('textAreaLeft'), R = $('textAreaRight');
+
+      // Restore text contents
+      const savedL = localStorage.getItem('ub_left');
+      const savedR = localStorage.getItem('ub_right');
+      if (savedL !== null) L.value = savedL;
+      if (savedR !== null) R.value = savedR;
+
+      // Seed history stacks
+      addState('textAreaLeft');
+      addState('textAreaRight');
+
+      // Restore toggles
+      const autoL = localStorage.getItem('ub_autoL'); if (autoL !== null) $('autoL').checked = autoL === '1';
+      const autoR = localStorage.getItem('ub_autoR'); if (autoR !== null) $('autoR').checked = autoR === '1';
+      const bijoyFontOn = localStorage.getItem('ub_bijoyFont'); if (bijoyFontOn === '1') { $('bijoyFont').checked = true; $('textAreaRight').classList.add('sutonny'); }
+
+      // If left has content and autoL is on, populate right
+      if (L.value && $('autoL').checked) convertLeftToRight();
+      else if (R.value && $('autoR').checked) convertRightToLeft();
+    })();
+  </script>
+</body>
+</html>
